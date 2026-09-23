@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Employee;
 use App\Models\UserProfile;
 use App\Services\SupabaseAuthService;
 use Illuminate\Http\Client\ConnectionException;
@@ -93,27 +94,64 @@ class AuthController extends Controller
     private function establishSession(Request $request, array $auth): RedirectResponse
     {
         $authUser = $auth['user'] ?? [];
-        $profile = UserProfile::query()->firstOrCreate(
-            ['auth_user_id' => $authUser['id']],
-            [
-                'name' => data_get($authUser, 'user_metadata.full_name', strtok((string) ($authUser['email'] ?? 'Pengguna'), '@')),
-                'email' => $authUser['email'] ?? null,
-                'role' => 'crm_staff',
+        $email = $authUser['email'] ?? null;
+
+        $profile = UserProfile::query()->where('auth_user_id', $authUser['id'])->first();
+
+        // One-to-one employee account mapping: the OPTIMA company email must
+        // exist in the Employee Master (blueprint access management).
+        if (! $profile) {
+            $employee = $email ? Employee::query()
+                ->whereRaw('lower(email) = ?', [strtolower((string) $email)])
+                ->first() : null;
+
+            if (! $employee || $employee->status !== 'active') {
+                return redirect()->route('login')->withErrors(['email' => 'Email tidak terdaftar pada master karyawan OPTIMA atau akun tidak aktif.']);
+            }
+
+            $profile = UserProfile::query()->create([
+                'auth_user_id' => $authUser['id'],
+                'employee_id' => $employee->employee_id,
+                'name' => data_get($authUser, 'user_metadata.full_name', $employee->name),
+                'email' => $email,
+                'role' => $employee->access_role,
+                'department_id' => $employee->department_id,
                 'is_active' => true,
-            ]
-        );
+            ]);
+        } elseif (! $profile->employee_id && $email) {
+            // Late linking for accounts created before the employee master.
+            $employee = Employee::query()->whereRaw('lower(email) = ?', [strtolower($email)])->first();
+            if ($employee) {
+                $profile->update([
+                    'employee_id' => $employee->employee_id,
+                    'role' => $employee->access_role,
+                    'department_id' => $employee->department_id,
+                ]);
+            }
+        }
 
         if (! $profile->is_active) {
             return redirect()->route('login')->withErrors(['email' => 'Akun Anda belum aktif. Hubungi administrator.']);
         }
 
+        $employee = $profile->employee;
+        if (! $employee || $employee->status !== 'active') {
+            $profile->update(['is_active' => false]);
+
+            return redirect()->route('login')->withErrors(['email' => 'Profil karyawan tidak aktif. Hubungi administrator.']);
+        }
+
+        $profile->update(['role' => $employee->access_role, 'department_id' => $employee->department_id]);
+
         $request->session()->regenerate();
         $request->session()->put('optima_user', [
             'id' => $profile->id,
             'auth_user_id' => $profile->auth_user_id,
+            'employee_id' => $employee->employee_id,
             'name' => $profile->name,
             'email' => $profile->email,
-            'role' => $profile->role,
+            'role' => $employee->access_role,
+            'department_id' => $employee->department_id,
             'access_token' => $auth['access_token'] ?? null,
             'refresh_token' => $auth['refresh_token'] ?? null,
             'expires_at' => now()->addSeconds((int) ($auth['expires_in'] ?? 3600))->timestamp,
