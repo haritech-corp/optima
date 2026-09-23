@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>OPTIMA — CRM Demo</title>
+  <link rel="stylesheet" href="assets/app.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="#dashboard"><span class="brand-mark">O</span><span>OPTIMA<small>Relationship System</small></span></a>
+      <nav id="nav" aria-label="Navigasi utama">
+        <a href="#dashboard" data-route="dashboard">⌂ <span>Dashboard</span></a>
+        <a href="#leads" data-route="leads">◎ <span>CRM Leads</span></a>
+        <a href="#clients" data-route="clients">▣ <span>Clients</span></a>
+        <a href="#followups" data-route="followups">✓ <span>Follow-up Center</span></a>
+      </nav>
+      <div class="sidebar-footer"><div class="avatar">AN</div><div><b>Andi Nugraha</b><small>CRM Manager</small></div></div>
+    </aside>
+    <main><header><button class="menu" id="menu" aria-label="Buka menu">☰</button><div id="crumb">Workspace / Dashboard</div><div class="header-actions"><button class="icon-button" id="notify" title="Notifikasi">♧<i></i></button><button class="avatar light">AN</button></div></header><div id="view"></div></main>
+  </div>
+  <div id="toast" role="status"></div>
+  <script src="assets/app.js"></script>
+</body>
+</html>
