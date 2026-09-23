@@ -20,6 +20,9 @@ MVP sistem ERP berbasis Laravel dan Supabase dengan fokus pada SSO, dashboard be
 - Hosting: runtime PHP/container yang menerima deployment dari GitHub
 
 GitHub Pages tidak dapat menjalankan Laravel karena hanya melayani aset statis.
+Untuk mencoba demo CRM statis tanpa backend, buka folder [docs](docs/) atau
+deploy otomatis melalui workflow GitHub Pages. Demo tersebut menggunakan
+`localStorage` dan bukan pengganti aplikasi Laravel penuh.
 
 ## Setup Development
 

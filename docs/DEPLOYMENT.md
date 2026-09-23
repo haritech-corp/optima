@@ -1,4 +1,22 @@
-# Deploy OPTIMA sebagai aplikasi Laravel publik
+# Deploy OPTIMA
+
+## GitHub Pages: demo static
+
+Repository ini menyertakan demo CRM yang berjalan sepenuhnya di browser pada
+folder `docs/`. Demo menyimpan perubahan data di `localStorage`, sehingga tidak
+memerlukan PHP, database, atau environment variable.
+
+Workflow `.github/workflows/deploy-pages.yml` akan otomatis menerbitkan folder
+`docs/` ke GitHub Pages setiap ada push ke branch `main`.
+
+Aktifkan **Settings > Pages > Build and deployment > Source: GitHub Actions**
+di repository GitHub. Setelah workflow selesai, buka URL Pages yang ditampilkan
+oleh job deployment.
+
+Demo ini tidak menjalankan route Laravel, login server-side, database, SSO,
+atau endpoint POST aplikasi utama.
+
+## Aplikasi Laravel penuh
 
 GitHub Pages tidak dapat dipakai karena aplikasi ini memerlukan PHP, sesi server,
 dan koneksi PostgreSQL. Gunakan host yang mendukung Docker/PHP, misalnya Laravel
